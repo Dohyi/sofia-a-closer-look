@@ -653,3 +653,41 @@ input[type='range'] {
     grid-template-columns: 1fr;
   }
 }
+
+.compare-line {
+  width: 44px;
+  transform: translateX(-50%);
+  background: transparent;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  cursor: ew-resize;
+  z-index: 2;
+}
+
+.compare-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: white;
+}
+
+.compare-line::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.interior-overview-photo a.interior-dot {
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.interior-overview-photo a.interior-dot .interior-dot-label {
+  pointer-events: auto;
+  cursor: pointer;
+}

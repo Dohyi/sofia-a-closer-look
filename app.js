@@ -148,7 +148,7 @@ function home() {
     ${config.imageCredit ? `<p class="credit">${escapeHTML(config.imageCredit)}</p>` : ''}
 
     <a class="primary" href="#ar/exterior">开始 AR 探索　↗</a>
-    <p class="credit">扫描展板上的索菲亚照片，开启建筑探索。</p>
+    <p class="credit">进入三维场景，探索索菲亚的建筑细节。</p>
 
     <div class="section-heading">
       <strong>选择你的探索方式</strong>
@@ -162,10 +162,10 @@ function home() {
         <b>02</b><strong>内部空间 ↗</strong><small>查看照片 · 探索内部空间</small>
       </a>
       <a class="tile" href="#history">
-        <b>03</b><strong>建筑历史 →</strong><small>无需扫描 · 沿着时间阅读</small>
+        <b>03</b><strong>建筑历史 →</strong><small>沿着时间 · 了解建筑历史</small>
       </a>
       <a class="tile" href="#compare">
-        <b>04</b><strong>历史影像 →</strong><small>无需扫描 · 观看建筑变迁</small>
+        <b>04</b><strong>历史照片 →</strong><small>滑动对比 · 查看建筑今昔</small>
       </a>
     </div>
   `;
@@ -174,33 +174,43 @@ function home() {
 function ar(mode) {
   const selected = modes[mode];
   const url = sceneURL(mode);
-  const hasRawLink = Boolean(config.kivicube[`${mode}Url`] || config.kivicube.sceneUrl);
 
-  app.innerHTML = heading('AR 建筑探索', '对准展板照片，开启你的探索。') + `
+  app.innerHTML = heading(
+    'AR 建筑探索',
+    '走近三维模型，探索索菲亚的建筑细节。'
+  ) + `
     <div class="tabs" aria-label="选择探索方式">
-      <button type="button" aria-pressed="true">外部结构 · AR</button>
-      <button type="button" data-route="demo/interior">内部图解 · 无需相机 →</button></div>
-    <div class="scan-guide">
-      ${photo(config.targetImage, '展板识别图预留位置')}
+      <button type="button" aria-pressed="true">
+        外部结构 · AR
+      </button>
+      <button type="button" data-route="demo/interior">
+        内部图解 →
+      </button>
     </div>
+
     <ol class="steps">
-      <li>点击下方按钮，并允许相机访问。</li>
-      <li>将实际展板上的指定照片完整放入画面。</li>
-      <li>${selected.instruction}</li>
+      <li>点击下方“开始体验”按钮。</li>
+      <li>加载完成后，点击“Start Now”进入场景。</li>
+      <li>查看教堂模型，点击场景中的按钮探索建筑细节。</li>
     </ol>
+
     ${url ? `
-      <button class="primary" id="launch-ar">打开相机 · 开始探索</button>
-      <a class="secondary" href="${escapeHTML(url)}">单独打开 AR 体验 ↗</a>
+      <button class="primary" id="launch-ar">
+        开始体验
+      </button>
+      <a class="secondary" href="${escapeHTML(url)}">
+        单独打开体验 ↗
+      </a>
     ` : `
-      <p class="note">${hasRawLink
-        ? '体验链接格式不正确，请在config.js中填写Kivicube的HTTPS场景或合辑链接。'
-        : 'AR体验尚未接入。你可以先查看下方的界面流程演示。'}</p>
+      <p class="note">体验暂时无法打开，请稍后重试。</p>
     `}
-    <a class="secondary" href="#demo/${mode}">查看界面演示 · 无需相机</a>
+
     <p class="status" id="ar-status" role="status"></p>
     <div id="ar-host" class="ar-host" hidden></div>
-    <button id="stop-ar" class="secondary" hidden>关闭 AR 体验</button>
-    <p class="note">请使用HTTPS网页并允许相机权限。图片识别、3D模型及部件交互在Kivicube场景中运行；此网页不会自行识别展板。</p>
+
+    <button id="stop-ar" class="secondary" hidden>
+      关闭体验
+    </button>
   `;
 
   if (!url) return;
@@ -211,19 +221,24 @@ function ar(mode) {
     const frame = document.createElement('iframe');
 
     frame.className = 'ar-frame';
-    frame.title = `索菲亚AR · ${selected.title}`;
-    frame.allow = 'camera; autoplay; fullscreen; gyroscope; accelerometer; xr-spatial-tracking';
+    frame.title = `索菲亚建筑探索 · ${selected.title}`;
+    frame.allow =
+      'camera; autoplay; fullscreen; gyroscope; accelerometer; xr-spatial-tracking';
     frame.allowFullscreen = true;
     frame.src = url;
+
     frame.addEventListener('load', () => {
-      status.textContent = '体验页面已载入，识别状态请查看AR画面内提示。';
+      status.textContent =
+        '体验页面已载入，请按画面提示进入场景。';
     });
 
     host.replaceChildren(frame);
     host.hidden = false;
+
     document.querySelector('#stop-ar').hidden = false;
     document.querySelector('#launch-ar').disabled = true;
-    status.textContent = '正在打开AR体验。如无法启动，请使用“单独打开 AR 体验”。';
+
+    status.textContent = '正在加载体验，请稍候。';
     host.scrollIntoView({ block: 'start' });
   };
 
@@ -232,32 +247,61 @@ function ar(mode) {
     document.querySelector('#ar-host').hidden = true;
     document.querySelector('#stop-ar').hidden = true;
     document.querySelector('#launch-ar').disabled = false;
-    document.querySelector('#ar-status').textContent = 'AR体验已关闭。';
+
+    document.querySelector('#ar-status').textContent =
+      '体验已关闭。';
   };
 }
 
 function interiorOverview() {
   app.innerHTML = heading(
     '内部空间',
-    '选择照片下方的项目，查看对应的建筑细节。'
+    '点击照片上的标记或下方项目，探索对应的建筑细节。'
   ) + `
     <div class="interior-overview-photo">
-      ${photo('images/sofia-interior.jpg', '教堂内部的穹顶、高窗与拱券')}
-      <span class="interior-dot" style="left:50%; top:49%">
-      <span class="interior-dot-label">穹顶</span>
-      </span>
-      <span class="interior-dot" style="left:68%; top:29%" aria-hidden="true">
-      <span class="interior-dot-label">高窗</span>
-      </span>
-      <span class="interior-dot" style="left:88%; top:62%" aria-hidden="true">
-      <span class="interior-dot-label">拱券</span>
-      </span>
+      ${photo(
+        'images/sofia-interior.jpg',
+        '教堂内部的穹顶、高窗与拱券'
+      )}
+
+      <a
+        class="interior-dot"
+        href="#part/innerDome"
+        style="left:50%; top:49%"
+        aria-label="查看穹顶内侧"
+      >
+        <span class="interior-dot-label">穹顶</span>
+      </a>
+
+      <a
+        class="interior-dot"
+        href="#part/mural"
+        style="left:68%; top:29%"
+        aria-label="查看环形高窗"
+      >
+        <span class="interior-dot-label">高窗</span>
+      </a>
+
+      <a
+        class="interior-dot"
+        href="#part/layout"
+        style="left:88%; top:62%"
+        aria-label="查看拱券与墙面"
+      >
+        <span class="interior-dot-label">拱券</span>
+      </a>
     </div>
 
     <div class="hotspots" aria-label="选择内部结构">
-      <button data-route="part/innerDome">穹顶内侧</button>
-      <button data-route="part/mural">环形高窗</button>
-      <button data-route="part/layout">拱券与墙面</button>
+      <button data-route="part/innerDome">
+        穹顶内侧
+      </button>
+      <button data-route="part/mural">
+        环形高窗
+      </button>
+      <button data-route="part/layout">
+        拱券与墙面
+      </button>
     </div>
   `;
 }
@@ -272,7 +316,7 @@ function demo(mode) {
     interiorOverview();
     return;
   }
-  
+
   const selected = modes[mode];
   const keys = Object.keys(parts).filter((key) => parts[key].mode === mode);
 
@@ -499,9 +543,7 @@ function history() {
       `).join('')}
     </div>
     <section id="history-content" aria-live="polite"></section>
-    ${!config.historyVerified ? '<p class="credit">年表为展示草稿，正式发布前需核验年份、史料与来源。</p>' : ''}
-    ${demoNote()}
-    <a class="secondary" href="#compare">观看历史影像 →</a>
+    <a class="secondary" href="#compare">查看今昔照片对比 →</a>
   `;
 
   const select = (index) => {
@@ -529,76 +571,116 @@ function history() {
 }
 
 function compare() {
-  app.innerHTML = heading('历史影像', '用影像观看建筑变迁，无需开启相机。') + `
-    <div class="tabs" aria-label="影像展示方式">
-      <button id="video-tab" aria-pressed="true">变迁动画</button>
-      <button id="photo-tab" aria-pressed="false">照片对比</button>
-    </div>
-    <section id="media-content"></section>
+  const media = config.media;
+  const past = assetURL(media.pastImage);
+  const present = assetURL(media.presentImage);
+
+  app.innerHTML = heading(
+    '历史照片',
+    '今昔对照，观看索菲亚的建筑变迁。'
+  ) + `
+  <section id="media-content"></section>
   `;
 
-  const select = (type) => {
-    document.querySelector('#video-tab').setAttribute('aria-pressed', type === 'video');
-    document.querySelector('#photo-tab').setAttribute('aria-pressed', type === 'photo');
-    const content = document.querySelector('#media-content');
-    const media = config.media;
+  const content = document.querySelector('#media-content');
 
-    if (type === 'video') {
-      const url = assetURL(media.historyVideo);
-      content.innerHTML = url ? `
-        <video controls playsinline preload="metadata" ${assetURL(media.videoPoster) ? `poster="${escapeHTML(media.videoPoster)}"` : ''}>
-          <source src="${escapeHTML(url)}" type="video/mp4">
-          当前浏览器不支持视频播放。
-        </video>
-        <p class="status" id="video-status" role="status"></p>
-        <div class="card"><h2>建筑变迁</h2><p>观看团队制作的建筑历史动画。</p></div>
-      ` : `
-        ${fallback('历史动画预留位置')}
-        <div class="card"><h2>建筑变迁动画</h2><p>这里将播放早期建筑、重建、修复与现状的短片。动画文件尚未接入。</p></div>
-      `;
-      const video = content.querySelector('video');
-      if (video) {
-        video.addEventListener('error', () => {
-          document.querySelector('#video-status').textContent = '视频无法播放，请检查文件路径与格式。';
-        });
-      }
-      return;
-    }
+  if (!past || !present) {
+    content.innerHTML = fallback('历史与现状照片待补充');
+    return;
+  }
 
-    const past = assetURL(media.pastImage);
-    const present = assetURL(media.presentImage);
-    if (!past || !present) {
-      content.innerHTML = `
-        ${fallback('历史与现状照片待补充')}
-      `;
+  content.innerHTML = `
+  <div class="compare-box" id="comparison">
+      <img
+        src="${escapeHTML(present)}"
+        alt="${escapeHTML(media.presentLabel)}"
+      >
+      <img
+        class="past"
+        src="${escapeHTML(past)}"
+        alt="${escapeHTML(media.pastLabel)}"
+      >
+      <div class="compare-line"></div>
+    </div>
 
-      return;
-    }
+    <div class="compare-labels">
+    <span>${escapeHTML(media.pastLabel)}</span>
+      <span>${escapeHTML(media.presentLabel)}</span>
+    </div>
 
-    content.innerHTML = `
-      <div class="compare-box" id="comparison">
-        <img src="${escapeHTML(present)}" alt="${escapeHTML(media.presentLabel)}">
-        <img class="past" src="${escapeHTML(past)}" alt="${escapeHTML(media.pastLabel)}">
-        <div class="compare-line"></div>
-      </div>
-      <div class="compare-labels"><span>${escapeHTML(media.pastLabel)}</span><span>${escapeHTML(media.presentLabel)}</span></div>
-      <label for="compare-range">拖动查看历史与现状</label>
-      <input id="compare-range" type="range" min="0" max="100" value="50">
-      <p class="status" id="comparison-status" role="status"></p>
-    `;
-    content.querySelectorAll('img').forEach((image) => {
-      image.addEventListener('error', () => {
-        document.querySelector('#comparison-status').textContent = '照片无法载入，请检查config.js中的路径与文件名。';
-      });
+    <label for="compare-range">
+      拖动查看历史与现状
+    </label>
+
+    <input
+      id="compare-range"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+    >
+
+    <p
+      class="status"
+      id="comparison-status"
+      role="status"
+    ></p>
+  `;
+
+  content.querySelectorAll('img').forEach((image) => {
+    image.addEventListener('error', () => {
+      document.querySelector('#comparison-status').textContent =
+        '照片无法载入，请检查图片路径与文件名。';
     });
-    document.querySelector('#compare-range').oninput = (event) => {
-      document.querySelector('#comparison').style.setProperty('--split', `${event.target.value}%`);
-    };
-  };
+  });
 
-  document.querySelector('#video-tab').onclick = () => select('video');
-  document.querySelector('#photo-tab').onclick = () => select('photo');
-  select('video');
+  const comparison = document.querySelector('#comparison');
+const range = document.querySelector('#compare-range');
+const handle = comparison.querySelector('.compare-line');
+
+function updateSplit(value) {
+  const percent = Math.max(0, Math.min(100, value));
+
+  comparison.style.setProperty('--split', `${percent}%`);
+  range.value = percent;
+}
+
+range.oninput = () => {
+  updateSplit(Number(range.value));
+};
+
+function updateFromPointer(event) {
+  const bounds = comparison.getBoundingClientRect();
+  const percent = ((event.clientX - bounds.left) / bounds.width) * 100;
+
+  updateSplit(percent);
+}
+
+handle.addEventListener('pointerdown', (event) => {
+  if (!event.isPrimary || event.button !== 0) return;
+
+  event.preventDefault();
+  handle.setPointerCapture(event.pointerId);
+  updateFromPointer(event);
+});
+
+handle.addEventListener('pointermove', (event) => {
+  if (!handle.hasPointerCapture(event.pointerId)) return;
+
+  updateFromPointer(event);
+});
+
+handle.addEventListener('pointerup', (event) => {
+  if (handle.hasPointerCapture(event.pointerId)) {
+    handle.releasePointerCapture(event.pointerId);
+  }
+});
+
+handle.addEventListener('pointercancel', (event) => {
+  if (handle.hasPointerCapture(event.pointerId)) {
+    handle.releasePointerCapture(event.pointerId);
+  }
+});
 }
 
 function render() {
