@@ -6,7 +6,8 @@ window.SOFIA_CONFIG = {
     kivicube: {
         sceneURL: '',
         exteriorUrl: 'https://www.kivicube.com/scenes/m8wSyjB1cqkJlhnFNwB562IcHpYrY0F9',
-        interiorUrl: ''
+        interiorUrl: '',
+        seasonsUrl: 'https://www.kivicube.com/scenes/l3dekdnDRcQNzD8CZW8respmO7XUKJuf'
     },
 
     history: [

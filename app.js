@@ -9,10 +9,17 @@ const modes = {
     description: '认识主体、穹顶与钟楼的组合。',
     instruction: '识别后，在AR场景内选择外部结构与构件。'
   },
+
   interior: {
     title: '内部空间',
     description: '探索穹顶之下的空间与细节。',
     instruction: '识别后，在AR场景内选择内部空间。'
+  },
+
+  seasons: {
+    title: '四季场景',
+    description: '感受索菲亚在不同季节中的景致。',
+    instruction: '点击场景中的季节按钮，感受索菲亚的四季变化。'
   }
 };
 
@@ -138,34 +145,70 @@ function modeTabs(mode, prefix) {
 
 function home() {
   app.innerHTML = `
-    <div class="eyebrow">HARBIN · ARCHITECTURE GUIDE</div>
-    <h1>走近索菲亚<br>读懂建筑的故事</h1>
-    <p class="lede">从一块红砖，到穹顶之下。<br>用互动的方式，探索建筑的内外。</p>
+    <div class="eyebrow">
+      HARBIN · ARCHITECTURE GUIDE
+    </div>
+
+    <h1>
+      走近索菲亚<br>
+      读懂建筑的故事
+    </h1>
+
+    <p class="lede">
+      从一块红砖，到穹顶之下。<br>
+      用互动的方式，探索建筑的内外。
+    </p>
 
     <div class="hero">
-      ${photo(config.heroImage, '哈尔滨圣索菲亚教堂', 'hero-photo')}
+      ${photo(
+        config.heroImage,
+        '哈尔滨圣索菲亚教堂',
+        'hero-photo'
+      )}
     </div>
-    ${config.imageCredit ? `<p class="credit">${escapeHTML(config.imageCredit)}</p>` : ''}
 
-    <a class="primary" href="#ar/exterior">开始 AR 探索　↗</a>
-    <p class="credit">进入三维场景，探索索菲亚的建筑细节。</p>
+    ${config.imageCredit ? `
+      <p class="credit">
+        ${escapeHTML(config.imageCredit)}
+      </p>
+    ` : ''}
+
+    <a class="primary" href="#ar/exterior">
+      外部结构 AR 探索　↗
+    </a>
+
+    <p class="credit">
+      进入三维场景，探索索菲亚的外部结构与建筑构件。
+    </p>
 
     <div class="section-heading">
       <strong>选择你的探索方式</strong>
       <span>EXPLORE / 01—04</span>
     </div>
+
     <div class="grid">
-      <a class="tile" href="#ar/exterior">
-        <b>01</b><strong>外部结构 ↗</strong><small>进入AR · 了解建筑构件</small>
+      <a class="tile" href="#ar/seasons">
+        <b>01</b>
+        <strong>四季场景 ↗</strong>
+        <small>进入AR · 感受索菲亚四季</small>
       </a>
+
       <a class="tile" href="#demo/interior">
-        <b>02</b><strong>内部空间 ↗</strong><small>查看照片 · 探索内部空间</small>
+        <b>02</b>
+        <strong>内部空间 ↗</strong>
+        <small>查看照片 · 探索内部空间</small>
       </a>
+
       <a class="tile" href="#history">
-        <b>03</b><strong>建筑历史 →</strong><small>沿着时间 · 了解建筑历史</small>
+        <b>03</b>
+        <strong>建筑历史 →</strong>
+        <small>沿着时间 · 了解建筑历史</small>
       </a>
+
       <a class="tile" href="#compare">
-        <b>04</b><strong>历史照片 →</strong><small>滑动对比 · 查看建筑今昔</small>
+        <b>04</b>
+        <strong>历史照片 →</strong>
+        <small>滑动对比 · 查看建筑今昔</small>
       </a>
     </div>
   `;
@@ -176,22 +219,25 @@ function ar(mode) {
   const url = sceneURL(mode);
 
   app.innerHTML = heading(
-    'AR 建筑探索',
-    '走近三维模型，探索索菲亚的建筑细节。'
+    selected.title,
+    selected.description
   ) + `
-    <div class="tabs" aria-label="选择探索方式">
-      <button type="button" aria-pressed="true">
-        外部结构 · AR
-      </button>
-      <button type="button" data-route="demo/interior">
-        内部图解 →
-      </button>
-    </div>
+  
+  <div class="exterior-preview">
+  <img
+    src="${mode === 'seasons'
+      ? 'images/sofia-seasons-preview.jpg'
+      : 'images/sofia-exterior-preview.jpg'}"
+    alt="${mode === 'seasons'
+      ? '降雪中的圣索菲亚教堂'
+      : '圣索菲亚教堂外观'}"
+  >
+</div>
 
     <ol class="steps">
       <li>点击下方“开始体验”按钮。</li>
       <li>加载完成后，点击“Start Now”进入场景。</li>
-      <li>查看教堂模型，点击场景中的按钮探索建筑细节。</li>
+      <li>${selected.instruction}</li>
     </ol>
 
     ${url ? `
@@ -686,8 +732,7 @@ handle.addEventListener('pointercancel', (event) => {
 function render() {
   app.querySelectorAll('video').forEach((video) => video.pause());
   app.replaceChildren();
-  navigation.hidden = true;
-  menuButton.setAttribute('aria-expanded', 'false');
+  closeMenu();
 
   const [page, parameter] = location.hash.slice(1).split('/');
   const mode = modes[parameter] ? parameter : 'exterior';
@@ -712,10 +757,87 @@ function render() {
   app.focus({ preventScroll: true });
 }
 
+let menuCloseTimer;
+
+function openMenu() {
+  clearTimeout(menuCloseTimer);
+
+  navigation.hidden = false;
+  menuButton.setAttribute('aria-expanded', 'true');
+  menuButton.setAttribute('aria-label', '关闭导航');
+}
+
+function closeMenu() {
+  clearTimeout(menuCloseTimer);
+
+  navigation.hidden = true;
+  menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-label', '打开导航');
+}
+
+function scheduleMenuClose() {
+  clearTimeout(menuCloseTimer);
+
+  menuCloseTimer = setTimeout(() => {
+    if (!navigation.contains(document.activeElement)) {
+      closeMenu();
+    }
+  }, 250);
+}
+
 menuButton.onclick = () => {
-  navigation.hidden = !navigation.hidden;
-  menuButton.setAttribute('aria-expanded', String(!navigation.hidden));
+  if (navigation.hidden) {
+    openMenu();
+  } else {
+    closeMenu();
+  }
 };
+
+menuButton.addEventListener('pointerenter', (event) => {
+  if (event.pointerType === 'mouse') {
+    openMenu();
+  }
+});
+
+menuButton.addEventListener('pointerleave', (event) => {
+  if (event.pointerType === 'mouse') {
+    scheduleMenuClose();
+  }
+});
+
+navigation.addEventListener('pointerenter', (event) => {
+  if (event.pointerType === 'mouse') {
+    clearTimeout(menuCloseTimer);
+  }
+});
+
+navigation.addEventListener('pointerleave', (event) => {
+  if (event.pointerType === 'mouse') {
+    scheduleMenuClose();
+  }
+});
+
+navigation.addEventListener('click', (event) => {
+  if (event.target.closest('a')) {
+    closeMenu();
+  }
+});
+
+document.addEventListener('pointerdown', (event) => {
+  if (
+    !navigation.contains(event.target) &&
+    !menuButton.contains(event.target)
+  ) {
+    closeMenu();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !navigation.hidden) {
+    closeMenu();
+    menuButton.focus();
+  }
+});
 
 window.addEventListener('hashchange', render);
 window.addEventListener('pagehide', () => {
