@@ -692,7 +692,11 @@ function render() {
   const [page, parameter] = location.hash.slice(1).split('/');
   const mode = modes[parameter] ? parameter : 'exterior';
 
-  if (page === 'ar') ar(mode);
+  if (page === 'ar' && mode === 'interior') {
+  interiorOverview();
+} else if (page === 'ar') {
+  ar(mode);
+}
   else if (page === 'demo') demo(mode);
   else if (page === 'part' && parts[parameter]) part(parameter);
   else if (page === 'history') history();
